@@ -1,24 +1,39 @@
 # This is only a stub makefile as of now
 
 CC=i686-elf-gcc
+CFLAGS=-std=gnu99 -ffreestanding -O2 -Wall -Wextra
+
+AS=i686-elf-as
+#ASFLAGS none thus far
+
+VPATH=src:build
+
+# Link
+build/bin/myos.bin : boot.o kernel.o
+	mkdir build/bin
+	$(CC) -T src/linker.ld -o $@ -ffreestanding -O2 -nostdlib $? -lgcc
+
+# Assemble 
+build/boot.o : boot.s
+	mkdir build
+	$(AS)  $? -o $@
+
+# Compile
+build/kernel.o : kernel.c
+	$(CC) $(CFLAGS) -c $? -o $@
 
 
-# assemble boot.s 
-i686-elf-as boot.s -o boot.o
+.PHONY = clean
+clean :
+	rm -rvf build
 
-# make kernel  
-i686-elf-gcc -c kernel.c -o kernel.o -std=gnu99 -ffreestanding -O2 -Wall -Wextra
+.PHONY = iso 
+iso : build/bin/myos.bin
+	mkdir build/iso
+	cp build/bin/myos.bin deploy/boot/
+	grub-mkrescue -o build/iso/myos.iso deploy
 
-# link
-i686-elf-gcc -T linker.ld -o myos.bin -ffreestanding -O2 -nostdlib boot.o kernel.o -lgcc
 
 
-# Check for multiboot
-if grub-file --is-x86-multiboot myos.bin; then
-  echo multiboot confirmed
-else
-  echo the file is not multiboot
-fi
 
-# Make iso
-grub-mkrescue -o myos.iso isodir
+
