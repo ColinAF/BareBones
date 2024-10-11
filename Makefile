@@ -1,9 +1,9 @@
-# This is only a stub makefile as of now
-
+# A Makefile for myos
+LD=i686-elf-gcc
 LDFLAGS=-ffreestanding -O2 -nostdlib -lgcc 
 
 CC=i686-elf-gcc
-CFLAGS=-std=gnu99 -ffreestanding -O2 -Wall -Wextra
+CFLAGS=-std=gnu99 -ffreestanding -O2 -Wall -Wextra -pedantic
 
 AS=i686-elf-as
 #ASFLAGS none thus far
@@ -13,7 +13,7 @@ VPATH=src:build
 # Link
 build/bin/myos.bin : boot.o kernel.o
 	mkdir build/bin
-	$(CC) -T src/linker.ld -o $@ $(LDFLAGS) $? 
+	$(LD) -T src/linker.ld -o $@ $(LDFLAGS) $? 
 
 # Assemble 
 build/boot.o : boot.s
