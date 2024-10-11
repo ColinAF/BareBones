@@ -1,5 +1,7 @@
 # This is only a stub makefile as of now
 
+LDFLAGS=-ffreestanding -O2 -nostdlib -lgcc 
+
 CC=i686-elf-gcc
 CFLAGS=-std=gnu99 -ffreestanding -O2 -Wall -Wextra
 
@@ -11,7 +13,7 @@ VPATH=src:build
 # Link
 build/bin/myos.bin : boot.o kernel.o
 	mkdir build/bin
-	$(CC) -T src/linker.ld -o $@ -ffreestanding -O2 -nostdlib $? -lgcc
+	$(CC) -T src/linker.ld -o $@ $(LDFLAGS) $? 
 
 # Assemble 
 build/boot.o : boot.s
@@ -23,17 +25,18 @@ build/kernel.o : kernel.c
 	$(CC) $(CFLAGS) -c $? -o $@
 
 
-.PHONY = clean
+.PHONY=clean
 clean :
 	rm -rvf build
 
-.PHONY = iso 
+.PHONY=iso 
 iso : build/bin/myos.bin
 	mkdir build/iso
 	cp build/bin/myos.bin deploy/boot/
 	grub-mkrescue -o build/iso/myos.iso deploy
 
-
-
+.PHONY=run
+run : iso
+	qemu-system-i386 -cdrom build/iso/myos.iso
 
 
