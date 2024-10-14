@@ -15,10 +15,10 @@
 static const size_t VGA_WIDTH = 80;   /**< The width of the VGA terminal. */
 static const size_t VGA_HEIGHT = 25;  /**< The height of the VGA terminal. */
 
-size_t terminal_row;                  /**< The current row in the terminal. */
-size_t terminal_column;               /**< The current column in the terminal. */
-uint8_t terminal_color;               /**< The current text color in the terminal. */
-uint16_t* terminal_buffer;            /**< Pointer to the VGA text buffer. */
+static size_t terminal_row;                  /**< The current row in the terminal. */
+static size_t terminal_column;               /**< The current column in the terminal. */
+static uint8_t terminal_color;               /**< The current text color in the terminal. */
+static uint16_t* terminal_buffer;            /**< Pointer to the VGA text buffer. */
 
 
 /**
