@@ -30,7 +30,8 @@ static void print_ascii(void)
 	return;
 }
 
-static void loop_on_string(const char* str)
+static void 
+loop_on_string(const char* str)
 {
 	size_t i = 0;
 	while(1)
