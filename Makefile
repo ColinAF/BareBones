@@ -10,14 +10,14 @@ AS=i686-elf-as
 
 VPATH=src:build
 
+
 # Link
 build/bin/myos.bin : boot.o kernel.o terminal.o string.o
-	mkdir build/bin
 	$(LD) -T src/linker.ld -o $@ $(LDFLAGS) $? 
 
 # Assemble 
 build/boot.o : boot.s
-	mkdir build
+	mkdir -p build/bin
 	$(AS)  $? -o $@
 
 # Compile
