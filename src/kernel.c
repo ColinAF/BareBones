@@ -5,7 +5,6 @@
 #include "string.h"
 #include "terminal.h"
 
-/* Check if the compiler thinks you are targeting the wrong operating system. */
 #if defined(__linux__)
 #error "You are not using a cross-compiler, you will most certainly run into trouble"
 #endif
@@ -37,7 +36,7 @@ loop_on_string(const char* str)
 	while(1)
 	{
 		terminal_write_string(str);
-		for(i = 0; i < 50000000; i++);	
+		for(i = 0; i < 50000000; i++); // Lame Delay 
 	}
 	
 	return; 

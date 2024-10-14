@@ -19,5 +19,21 @@ enum vga_color
 	VGA_COLOR_WHITE = 15,
 };
 
-void terminal_initialize(void);
-void terminal_write_string(const char* data);
+/**
+ * @brief Initializes the terminal by clearing the screen and setting up default values.
+ */
+void 
+terminal_initialize(void);
+
+/**
+ * @brief Clears the terminal screen by filling it with blank spaces.
+ */
+void 
+terminal_clear(void);
+
+/**
+ * @brief Writes a null-terminated string to the terminal.
+ * @param data The string to write.
+ */
+void 
+terminal_write_string(const char* data);
