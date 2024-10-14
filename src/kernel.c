@@ -18,7 +18,7 @@
 static void print_ascii(void)
 {
 	size_t i = 0; 
-	char c = "a";
+	char c = 'a';
 	
 	for(i = 0; i < 256; i++)
 	{
@@ -47,6 +47,7 @@ kernel_main(void)
 {
 	terminal_initialize();
 	terminal_write_string("This is my os!\n");	
+	print_ascii();
 	loop_on_string("Joy to the world!\n");	
 }
 
