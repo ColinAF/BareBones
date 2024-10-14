@@ -46,7 +46,7 @@ terminal_initialize(void)
 void
 terminal_scroll_up(void)
 {
-	terminal_row = 0;
+	terminal_row--;
 	terminal_column = 0;
 	terminal_buffer = (uint16_t*) 0xB8000;
 
