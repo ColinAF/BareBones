@@ -15,12 +15,44 @@
 #error "This tutorial needs to be compiled with a ix86-elf compiler"
 #endif
 
+static void print_ascii(void)
+{
+	size_t i = 0; 
+	char c = "a";
+	
+	for(i = 0; i < 256; i++)
+	{
+		(c)++;
+		terminal_write_string(&c);
+
+	}
+
+	return;
+}
+
+static void loop_on_string(const char* str)
+{
+	size_t i = 0;
+	while(1)
+	{
+		terminal_write_string(str);
+		for(i = 0; i < 50000000; i++);	
+	}
+	
+	return; 
+}
+
 void 
 kernel_main(void) 
 {
-	/* Initialize terminal interface */
 	terminal_initialize();
-
-	/* Newline support is left as an exercise. */
-	terminal_write_string("This is my os!\n");
+	terminal_write_string("This is my os!\n");	
+	loop_on_string("Joy to the world!\n");	
 }
+
+
+
+
+
+
+
