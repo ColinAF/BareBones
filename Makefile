@@ -11,7 +11,7 @@ AS=i686-elf-as
 VPATH=src:build
 
 # Link
-build/bin/myos.bin : boot.o kernel.o
+build/bin/myos.bin : boot.o kernel.o terminal.o string.o
 	mkdir build/bin
 	$(LD) -T src/linker.ld -o $@ $(LDFLAGS) $? 
 
@@ -21,9 +21,14 @@ build/boot.o : boot.s
 	$(AS)  $? -o $@
 
 # Compile
-build/kernel.o : kernel.c
+build/kernel.o : kernel.c 
 	$(CC) $(CFLAGS) -c $? -o $@
 
+build/string.o : string.c
+	$(CC) $(CFLAGS) -c $? -o $@
+
+build/terminal.o : terminal.c
+	$(CC) $(CFLAGS) -c $? -o $@
 
 .PHONY=clean
 clean :
