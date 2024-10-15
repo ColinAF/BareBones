@@ -6,8 +6,6 @@
 #include "string.h"
 
 // TODO 
-// - Add bounds checking
-// - Get rid of the magic numbers 
 // - Factor out a VGA driver
 // - Write a kprintf 
 
@@ -39,10 +37,11 @@ static uint16_t* const terminal_buffer = (uint16_t*)0xB8000;  /**< Pointer to th
 /** 
  * @brief Terminal structure definition (opaque to other modules).
  */
+// More elements can be added later such as a history buffer
 struct terminal 
 {
-    size_t row;                /**< The current row in the terminal. */
-    size_t column;             /**< The current column in the terminal. */
+    size_t row;           /**< The current row in the terminal. */
+    size_t column;        /**< The current column in the terminal. */
     uint8_t color;        /**< The current vga color entry for the terminal. */
 };
 
@@ -97,6 +96,7 @@ terminal_initialize(terminal_t* term)
  * @brief Scrolls the terminal up by one line, shifting the content up and clearing the bottom line.
  * @param term Pointer to the terminal handle.
  */
+// Use memmove evntually
 void
 terminal_scroll_up(terminal_t* term)
 {
@@ -120,6 +120,7 @@ terminal_scroll_up(terminal_t* term)
  * @brief Clears the terminal screen by filling it with blank spaces.
  * @param term Pointer to the terminal handle.
  */
+// Use memset eventually
 void
 terminal_clear(terminal_t* term)
 {
