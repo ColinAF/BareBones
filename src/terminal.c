@@ -9,15 +9,42 @@
 // - Add bounds checking
 // - Get rid of the magic numbers 
 // - Factor out a VGA driver
-// - Add an opaque ref to the handler (some sort of struct)
+// - Write a kprintf 
+
+/* Hardware text mode color constants. */
+enum vga_color 
+{
+	VGA_COLOR_BLACK = 0,
+	VGA_COLOR_BLUE = 1,
+	VGA_COLOR_GREEN = 2,
+	VGA_COLOR_CYAN = 3,
+	VGA_COLOR_RED = 4,
+	VGA_COLOR_MAGENTA = 5,
+	VGA_COLOR_BROWN = 6,
+	VGA_COLOR_LIGHT_GREY = 7,
+	VGA_COLOR_DARK_GREY = 8,
+	VGA_COLOR_LIGHT_BLUE = 9,
+	VGA_COLOR_LIGHT_GREEN = 10,
+	VGA_COLOR_LIGHT_CYAN = 11,
+	VGA_COLOR_LIGHT_RED = 12,
+	VGA_COLOR_LIGHT_MAGENTA = 13,
+	VGA_COLOR_LIGHT_BROWN = 14,
+	VGA_COLOR_WHITE = 15,
+};
 
 static const size_t VGA_WIDTH = 80;   /**< The width of the VGA terminal. */
 static const size_t VGA_HEIGHT = 25;  /**< The height of the VGA terminal. */
+static uint16_t* const terminal_buffer = (uint16_t*)0xB8000;  /**< Pointer to the VGA text buffer. */
 
-static size_t terminal_row;                  /**< The current row in the terminal. */
-static size_t terminal_column;               /**< The current column in the terminal. */
-static uint8_t terminal_color;               /**< The current text color in the terminal. */
-static uint16_t* const terminal_buffer = (uint16_t*)0xB8000;            /**< Pointer to the VGA text buffer. */
+/** 
+ * @brief Terminal structure definition (opaque to other modules).
+ */
+struct terminal 
+{
+    size_t row;                /**< The current row in the terminal. */
+    size_t column;             /**< The current column in the terminal. */
+    uint8_t color;        /**< The current vga color entry for the terminal. */
+};
 
 /**
  * @brief Combines foreground and background colors into a single 8-bit value.
@@ -47,18 +74,18 @@ vga_entry(unsigned char uc, uint8_t color)
  * @brief Initializes the terminal by clearing the screen and setting up default values.
  */
 void 
-terminal_initialize(void) 
+terminal_initialize(terminal_t* term) 
 {
-	terminal_row = 0;
-	terminal_column = 0;
-	terminal_color = vga_entry_color(VGA_COLOR_GREEN, VGA_COLOR_BLACK);
+	term->row = 0;
+    term->column = 0;
+    term->color = vga_entry_color(VGA_COLOR_GREEN, VGA_COLOR_BLACK);
 
 	for (size_t y = 0; y < VGA_HEIGHT; y++) 
 	{
 		for (size_t x = 0; x < VGA_WIDTH; x++) 
 		{
 			size_t index = y * VGA_WIDTH + x;
-			terminal_buffer[index] = vga_entry(' ', terminal_color);
+			terminal_buffer[index] = vga_entry(' ', term->color);
 		}
 	}
 
@@ -69,10 +96,10 @@ terminal_initialize(void)
  * @brief Scrolls the terminal up by one line, shifting the content up and clearing the bottom line.
  */
 void
-terminal_scroll_up(void)
+terminal_scroll_up(terminal_t* term)
 {
-	terminal_row--;
-	terminal_column = 0;
+	term->row--;
+	term->column = 0;
 
 	for (size_t y = 0; y < (VGA_HEIGHT - 1); y++) 
 	{
@@ -81,7 +108,7 @@ terminal_scroll_up(void)
 			size_t next_index = (y+1) * VGA_WIDTH + x;
 			size_t current_index = (y) * VGA_WIDTH + x;
 			terminal_buffer[current_index] = 
-				vga_entry(terminal_buffer[next_index], terminal_color);
+				vga_entry(terminal_buffer[next_index], term->color);
 		}
 	}
 	return;
@@ -91,17 +118,17 @@ terminal_scroll_up(void)
  * @brief Clears the terminal screen by filling it with blank spaces.
  */
 void
-terminal_clear(void)
+terminal_clear(terminal_t* term)
 {
-	terminal_row = 0;
-	terminal_column = 0;
+	term->row = 0;
+	term->column = 0;
 
 	for (size_t y = 0; y < VGA_HEIGHT; y++) 
 	{
 		for (size_t x = 0; x < VGA_WIDTH; x++) 
 		{
 			size_t index = y * VGA_WIDTH + x;
-			terminal_buffer[index] = vga_entry(' ', terminal_color);
+			terminal_buffer[index] = vga_entry(' ', term->color);
 		}
 	}
 
@@ -113,9 +140,9 @@ terminal_clear(void)
  * @param color The 8-bit color value to set.
  */
 static void 
-terminal_setcolor(uint8_t color) 
+terminal_setcolor(terminal_t* term, uint8_t color) 
 {
-	terminal_color = color;
+	term->color = color;
 }
 
 /**
@@ -137,28 +164,28 @@ terminal_putentryat(char c, uint8_t color, size_t x, size_t y)
  * @param c The character to output.
  */
 void 
-terminal_putchar(char c) 
+terminal_putchar(terminal_t* term, char c) 
 {
 	if(c == '\n')
 	{
-		terminal_column = 0; 
-		terminal_row++;
-		if (terminal_row == VGA_HEIGHT)
+		term->column = 0; 
+		term->row++;
+		if (term->row == VGA_HEIGHT)
 		{
-			terminal_scroll_up();
+			terminal_scroll_up(term);
 		}
 
 		return; 
 	}
 
-	terminal_putentryat(c, terminal_color, terminal_column, terminal_row);
+	terminal_putentryat(c, term->color, term->column, term->row);
 	
-	if(++terminal_column == VGA_WIDTH) 
+	if(++term->column == VGA_WIDTH) 
 	{
-		terminal_column = 0;
-		if (++terminal_row == VGA_HEIGHT)
+		term->column = 0;
+		if (++term->row == VGA_HEIGHT)
 		{
-			terminal_scroll_up();
+			terminal_scroll_up(term);
 		}
 	}
 
@@ -171,11 +198,11 @@ terminal_putchar(char c)
  * @param size The number of characters to write.
  */
 static void 
-terminal_write(const char* data, size_t size) 
+terminal_write(terminal_t* term, const char* data, size_t size) 
 {
 	for (size_t i = 0; i < size; i++)
 	{
-		terminal_putchar(data[i]);
+		terminal_putchar(term, data[i]);
 	}
 
 	return; 
@@ -186,9 +213,9 @@ terminal_write(const char* data, size_t size)
  * @param data The string to write.
  */
 void 
-terminal_write_string(const char* data) 
+terminal_write_string(terminal_t* term, const char* data) 
 {
-	terminal_write(data, strlen(data));
+	terminal_write(term, data, strlen(data));
 	return;
 }
 

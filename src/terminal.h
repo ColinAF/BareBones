@@ -1,39 +1,20 @@
-/* Hardware text mode color constants. */
-enum vga_color 
-{
-	VGA_COLOR_BLACK = 0,
-	VGA_COLOR_BLUE = 1,
-	VGA_COLOR_GREEN = 2,
-	VGA_COLOR_CYAN = 3,
-	VGA_COLOR_RED = 4,
-	VGA_COLOR_MAGENTA = 5,
-	VGA_COLOR_BROWN = 6,
-	VGA_COLOR_LIGHT_GREY = 7,
-	VGA_COLOR_DARK_GREY = 8,
-	VGA_COLOR_LIGHT_BLUE = 9,
-	VGA_COLOR_LIGHT_GREEN = 10,
-	VGA_COLOR_LIGHT_CYAN = 11,
-	VGA_COLOR_LIGHT_RED = 12,
-	VGA_COLOR_LIGHT_MAGENTA = 13,
-	VGA_COLOR_LIGHT_BROWN = 14,
-	VGA_COLOR_WHITE = 15,
-};
+typedef struct terminal terminal_t;  /**< Opaque struct for terminal state */
 
 /**
  * @brief Initializes the terminal by clearing the screen and setting up default values.
  */
 void 
-terminal_initialize(void);
+terminal_initialize(terminal_t* term);
 
 /**
  * @brief Clears the terminal screen by filling it with blank spaces.
  */
 void 
-terminal_clear(void);
+terminal_clear(terminal_t* term);
 
 /**
  * @brief Writes a null-terminated string to the terminal.
  * @param data The string to write.
  */
 void 
-terminal_write_string(const char* data);
+terminal_write_string(terminal_t* term, const char* data);
