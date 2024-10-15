@@ -72,6 +72,7 @@ vga_entry(unsigned char uc, uint8_t color)
 
 /**
  * @brief Initializes the terminal by clearing the screen and setting up default values.
+ * @param term Pointer to the terminal handle.
  */
 void 
 terminal_initialize(terminal_t* term) 
@@ -94,6 +95,7 @@ terminal_initialize(terminal_t* term)
 
 /**
  * @brief Scrolls the terminal up by one line, shifting the content up and clearing the bottom line.
+ * @param term Pointer to the terminal handle.
  */
 void
 terminal_scroll_up(terminal_t* term)
@@ -116,6 +118,7 @@ terminal_scroll_up(terminal_t* term)
 
 /**
  * @brief Clears the terminal screen by filling it with blank spaces.
+ * @param term Pointer to the terminal handle.
  */
 void
 terminal_clear(terminal_t* term)
@@ -137,6 +140,7 @@ terminal_clear(terminal_t* term)
 
 /**
  * @brief Sets the terminal's current text color.
+ * @param term Pointer to the terminal handle.
  * @param color The 8-bit color value to set.
  */
 static void 
@@ -161,6 +165,7 @@ terminal_putentryat(char c, uint8_t color, size_t x, size_t y)
 
 /**
  * @brief Outputs a character to the terminal, handling special cases like newlines.
+ * @param term Pointer to the terminal handle.
  * @param c The character to output.
  */
 void 
@@ -194,6 +199,7 @@ terminal_putchar(terminal_t* term, char c)
 
 /**
  * @brief Writes a sequence of characters to the terminal.
+ * @param term Pointer to the terminal handle.
  * @param data The character data to write.
  * @param size The number of characters to write.
  */
@@ -210,6 +216,7 @@ terminal_write(terminal_t* term, const char* data, size_t size)
 
 /**
  * @brief Writes a null-terminated string to the terminal.
+ * @param term Pointer to the terminal handle.
  * @param data The string to write.
  */
 void 
