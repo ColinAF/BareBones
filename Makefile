@@ -1,15 +1,14 @@
 # A Makefile for myos
-LD=i686-elf-gcc
-LDFLAGS=-ffreestanding -O2 -nostdlib -lgcc 
+LD:=i686-elf-gcc
+LDFLAGS:=-ffreestanding -O2 -nostdlib -lgcc 
 
-CC=i686-elf-gcc
-CFLAGS=-std=gnu99 -ffreestanding -O2 -Wall -Wextra -pedantic
+CC:=i686-elf-gcc
+CFLAGS:=-std=gnu99 -ffreestanding -O2 -Wall -Wextra -pedantic
 
-AS=i686-elf-as
+AS:=i686-elf-as
 #ASFLAGS none thus far
 
-VPATH=src:build
-
+VPATH:=src:build
 
 # Link
 build/bin/myos.bin : boot.o kernel.o terminal.o string.o
