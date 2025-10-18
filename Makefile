@@ -7,9 +7,9 @@ WARNINGS := -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
             -Wwrite-strings -Wmissing-prototypes -Wmissing-declarations \
             -Wredundant-decls -Wnested-externs -Winline -Wno-long-long \
             -Wconversion -Wstrict-prototypes
-CFLAGS  := -std=gnu99 -ffreestanding -O2 $(WARNINGS)
+CFLAGS  := -std=gnu99 -ffreestanding -O2 -Ilibc -Ikernel $(WARNINGS)
 
-PROJDIRS := src libc
+PROJDIRS := src libc kernel
 SRCFILES := $(shell find $(PROJDIRS) -type f -name '*.c')
 ASMFILES := $(shell find $(PROJDIRS) -type f -name '*.s')
 HDRFILES := $(shell find $(PROJDIRS) -type f -name '*.h')
@@ -29,7 +29,7 @@ all: $(BIN)/myos.bin
 
 # Link
 $(BIN)/myos.bin : $(ASMOBJFILES) $(OBJFILES) | $(BIN)
-	$(LD) -T src/linker.ld -o $@ $(LDFLAGS) $^
+	$(LD) -T linker.ld -o $@ $(LDFLAGS) $^
 
 # Assemble 
 %.s.o : %.s
@@ -45,7 +45,7 @@ $(BIN):
 
 clean :
 	rm -rf build
-	-@$(RM) $(wildcard $(OBJFILES) $(DEPFILES))
+	-@$(RM) $(wildcard $(OBJFILES) $(ASMOBJFILES) $(DEPFILES))
 
 iso: $(BIN)/myos.bin
 	mkdir -p build/iso
