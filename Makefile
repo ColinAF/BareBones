@@ -1,46 +1,54 @@
-# A Makefile for myos
-LD:=i686-elf-gcc
-LDFLAGS:=-ffreestanding -O2 -nostdlib -lgcc 
+LD      := i686-elf-gcc
+CC      := i686-elf-gcc
+AS      := i686-elf-as
 
-CC:=i686-elf-gcc
-CFLAGS:=-std=gnu99 -ffreestanding -O2 -Wall -Wextra -pedantic
+LDFLAGS := -ffreestanding -O2 -nostdlib -lgcc
+WARNINGS := -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
+            -Wwrite-strings -Wmissing-prototypes -Wmissing-declarations \
+            -Wredundant-decls -Wnested-externs -Winline -Wno-long-long \
+            -Wconversion -Wstrict-prototypes
+CFLAGS  := -std=gnu99 -ffreestanding -O2 $(WARNINGS)
 
-AS:=i686-elf-as
-#ASFLAGS none thus far
+PROJDIRS := src libc
+SRCFILES := $(shell find $(PROJDIRS) -type f -name '*.c')
+HDRFILES := $(shell find $(PROJDIRS) -type f -name '*.h')
 
-VPATH:=src:build
+BUILD := build
+BIN   := $(BUILD)/bin
+
+# Mirror source tree under build/
+OBJFILES := $(patsubst %.c,%.o,$(SRCFILES))
+DEPFILES := $(patsubst %.c,%.d,$(SRCFILES))
+
+-include $(DEPFILES)
+
+all: $(BIN)/myos.bin
 
 # Link
-build/bin/myos.bin : boot.o kernel.o terminal.o string.o
-	$(LD) -T src/linker.ld -o $@ $(LDFLAGS) $? 
+$(BIN)/myos.bin : boot.o $(OBJFILES) | $(BIN)
+	$(LD) -T src/linker.ld -o $@ $(LDFLAGS) $^
 
 # Assemble 
-build/boot.o : boot.s
-	mkdir -p build/bin
-	$(AS)  $? -o $@
+boot.o : src/boot.s
+	$(AS) $< -o $@
 
-# Compile
-build/kernel.o : kernel.c 
-	$(CC) $(CFLAGS) -c $? -o $@
+%.o: %.c Makefile
+	@$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
 
-build/string.o : string.c
-	$(CC) $(CFLAGS) -c $? -o $@
+# ensure bin dir exists
+$(BIN):
+	mkdir -p $@
 
-build/terminal.o : terminal.c
-	$(CC) $(CFLAGS) -c $? -o $@
-
-.PHONY=clean
+.PHONY: all clean iso run
+# Clean objects/deps produced beside sources
 clean :
-	rm -rvf build
+	rm -rf build
+	-@$(RM) $(wildcard $(OBJFILES) $(DEPFILES))
 
-.PHONY=iso 
-iso : build/bin/myos.bin
-	mkdir build/iso
-	cp build/bin/myos.bin deploy/boot/
+iso: $(BIN)/myos.bin
+	mkdir -p build/iso
+	cp $(BIN)/myos.bin deploy/boot/
 	grub-mkrescue -o build/iso/myos.iso deploy
 
-.PHONY=run
-run : iso
+run: iso
 	qemu-system-i386 -cdrom build/iso/myos.iso
-
-
