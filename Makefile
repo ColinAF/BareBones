@@ -11,36 +11,38 @@ CFLAGS  := -std=gnu99 -ffreestanding -O2 $(WARNINGS)
 
 PROJDIRS := src libc
 SRCFILES := $(shell find $(PROJDIRS) -type f -name '*.c')
+ASMFILES := $(shell find $(PROJDIRS) -type f -name '*.s')
 HDRFILES := $(shell find $(PROJDIRS) -type f -name '*.h')
 
 BUILD := build
 BIN   := $(BUILD)/bin
 
-# Mirror source tree under build/
-OBJFILES := $(patsubst %.c,%.o,$(SRCFILES))
-DEPFILES := $(patsubst %.c,%.d,$(SRCFILES))
+OBJFILES    := $(patsubst %.c,%.o,$(SRCFILES))
+ASMOBJFILES := $(patsubst %.s,%.s.o,$(ASMFILES))
+DEPFILES    := $(patsubst %.c,%.d,$(SRCFILES))
+
+.PHONY: all clean iso run
 
 -include $(DEPFILES)
 
 all: $(BIN)/myos.bin
 
 # Link
-$(BIN)/myos.bin : boot.o $(OBJFILES) | $(BIN)
+$(BIN)/myos.bin : $(ASMOBJFILES) $(OBJFILES) | $(BIN)
 	$(LD) -T src/linker.ld -o $@ $(LDFLAGS) $^
 
 # Assemble 
-boot.o : src/boot.s
+%.s.o : %.s
 	$(AS) $< -o $@
 
+# Compile
 %.o: %.c Makefile
 	@$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
 
-# ensure bin dir exists
+# Ensure bin dir exists
 $(BIN):
 	mkdir -p $@
 
-.PHONY: all clean iso run
-# Clean objects/deps produced beside sources
 clean :
 	rm -rf build
 	-@$(RM) $(wildcard $(OBJFILES) $(DEPFILES))
